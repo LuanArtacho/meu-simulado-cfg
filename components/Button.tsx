@@ -1,22 +1,33 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
+  disabled?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({ title, ...props }) => {
+const Button: React.FC<ButtonProps> = ({ title, disabled = false, ...props }) => {
+  const { colors } = useTheme();
+  
   return (
-    <TouchableOpacity style={styles.button} {...props}>
-      <Text style={styles.text}>{title}</Text>
+    <TouchableOpacity 
+      style={[
+        styles.button, 
+        { backgroundColor: disabled ? colors.border : colors.primary },
+        disabled && { opacity: 0.5 }
+      ]} 
+      disabled={disabled}
+      {...props}
+    >
+      <Text style={[styles.text, { color: disabled ? colors.textSecondary : 'white' }]}>{title}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    width: '100%',
-    backgroundColor: '#0284c7',
+    flex: 1,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',

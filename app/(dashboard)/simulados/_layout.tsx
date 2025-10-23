@@ -10,6 +10,8 @@ export default function SimuladoLayout() {
       <Stack.Screen name="completos" />
       <Stack.Screen name="pontuais" />
       <Stack.Screen name="fazer" />
+      <Stack.Screen name="executar" />
+      <Stack.Screen name="resultado" />
       <Stack.Screen name="review/[id]" />
     </Stack>
   );

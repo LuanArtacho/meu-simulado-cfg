@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import Button from '../components/Button';
+import LoginHelper from '../components/LoginHelper';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen() {
@@ -26,9 +27,14 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
+      
+      <LoginHelper onFillCredentials={(email, password) => {
+        setEmail(email);
+        setPassword(password);
+      }} />
       <TextInput
         style={styles.input}
-        placeholder="E-mail"
+        placeholder="E-mail (admin123@test.com)"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -36,7 +42,7 @@ export default function LoginScreen() {
       />
       <TextInput
         style={styles.input}
-        placeholder="Senha"
+        placeholder="Senha (123)"
         value={password}
         onChangeText={setPassword}
         secureTextEntry

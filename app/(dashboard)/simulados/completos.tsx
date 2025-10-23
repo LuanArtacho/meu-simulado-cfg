@@ -7,7 +7,11 @@ export default function CompletosScreen() {
   const router = useRouter();
 
   const handleCompletoPress = (numero: number) => {
-    router.push(`/(dashboard)/simulados/fazer?tipo=completo&numero=${numero}`);
+    if (numero === 1) {
+      router.push(`/(dashboard)/simulados/executar?tipo=completo&numero=${numero}`);
+    } else {
+      router.push(`/(dashboard)/simulados/fazer?tipo=completo&numero=${numero}`);
+    }
   };
 
   return (

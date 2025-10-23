@@ -17,5 +17,8 @@ export interface Result {
   totalQuestions: number;
   percentage: number;
   timestamp: Date;
-  modulo: string; // ex: "completo", "modulo1"
+  modulo: string;
+  duration?: number; // em segundos
+  answers?: Record<string, string>;
+  questions?: Question[];
 }

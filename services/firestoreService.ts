@@ -1,56 +1,79 @@
-// services/firestoreService.ts
-// Responsável por toda a comunicação com o Cloud Firestore.
-// Abstrai a lógica de busca de questões e salvamento de resultados.
-
-import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
-import { Question, Result } from '../types/simulado';
+import { addDoc, collection, getDocs, orderBy, query, where, limit as firestoreLimit } from 'firebase/firestore';
+import { Result } from '../types/simulado';
 import { firestoreDB } from './firebaseConfig';
 
-/**
- * Busca questões de um módulo específico ou todas as questões.
- * @param modulo - O nome do módulo (ex: "modulo1") ou null para o simulado completo.
- * @returns Uma promessa que resolve para um array de questões.
- * * Exemplo de como adicionar novos módulos:
- * Basta criar documentos no Firestore com o campo "modulo" correspondente.
- * Ex: { question: "...", options: [...], answer: "...", modulo: "modulo3" }
- */
-export const fetchQuestions = async (modulo: string | null): Promise<Question[]> => {
+export const saveResult = async (result: Omit<Result, 'id'>): Promise<string> => {
   try {
-    const questionsCollection = collection(firestoreDB, 'questions');
-    
-    // Se um módulo for especificado, filtra por ele. Senão, busca tudo.
-    const q = modulo 
-      ? query(questionsCollection, where("modulo", "==", modulo))
-      : questionsCollection;
-      
-    const querySnapshot = await getDocs(q);
-    
-    const questions: Question[] = [];
-    querySnapshot.forEach((doc) => {
-      questions.push({ id: doc.id, ...doc.data() } as Question);
+    const docRef = await addDoc(collection(firestoreDB, 'results'), {
+      ...result,
+      timestamp: result.timestamp,
+      createdAt: new Date()
     });
-    
-    return questions;
+    return docRef.id;
   } catch (error) {
-    console.error("Erro ao buscar questões:", error);
-    throw new Error("Não foi possível carregar as questões do simulado.");
+    console.error('Erro ao salvar resultado:', error);
+    throw error;
   }
 };
 
-/**
- * Salva o resultado de um simulado no Firestore.
- * @param resultData - Os dados do resultado a serem salvos.
- */
-export const saveResult = async (resultData: Omit<Result, 'id' | 'timestamp'>): Promise<void> => {
+export const getUserResults = async (userId: string): Promise<Result[]> => {
   try {
-    const resultsCollection = collection(firestoreDB, 'results');
-    await addDoc(resultsCollection, {
-      ...resultData,
-      timestamp: serverTimestamp() // Usa o timestamp do servidor para consistência
-    });
-    console.log("Resultado salvo com sucesso!");
+    const q = query(
+      collection(firestoreDB, 'results'),
+      where('userId', '==', userId),
+      orderBy('timestamp', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp),
+      };
+    }) as Result[];
   } catch (error) {
-    console.error("Erro ao salvar resultado:", error);
-    throw new Error("Não foi possível salvar seu resultado.");
+    console.error('Erro ao buscar resultados:', error);
+    return [];
+  }
+};
+
+export const getRecentResults = async (userId: string, limit: number = 4): Promise<Result[]> => {
+  try {
+    const q = query(
+      collection(firestoreDB, 'results'),
+      where('userId', '==', userId),
+      orderBy('timestamp', 'desc'),
+      firestoreLimit(limit)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp),
+      };
+    }) as Result[];
+  } catch (error) {
+    console.error('Erro ao buscar resultados recentes:', error);
+    return [];
+  }
+};
+
+export const syncUserData = async (userId: string) => {
+  try {
+    const results = await getUserResults(userId);
+    return {
+      totalSimulados: results.length,
+      mediaGeral: results.length > 0 ? results.reduce((acc, r) => acc + r.percentage, 0) / results.length : 0,
+      aprovacoes: results.filter(r => r.percentage >= 70).length,
+      melhorNota: results.length > 0 ? Math.max(...results.map(r => r.percentage)) : 0
+    };
+  } catch (error) {
+    console.error('Erro ao sincronizar dados:', error);
+    return null;
   }
 };

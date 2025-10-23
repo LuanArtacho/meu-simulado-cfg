@@ -2,13 +2,15 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Button from '../../../components/Button';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export default function SimuladosIndexScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Escolha o Tipo de Simulado</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Escolha o Tipo de Simulado</Text>
       
       <View style={styles.buttonContainer}>
         <Button 
@@ -32,7 +34,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
     padding: 24,
   },
   title: {
@@ -40,7 +41,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 40,
-    color: '#1e293b',
   },
   buttonContainer: {
     gap: 16,

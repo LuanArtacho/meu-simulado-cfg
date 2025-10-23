@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 import { Result } from '../types/simulado';
 
 interface SimuladoCardProps {
@@ -9,6 +10,7 @@ interface SimuladoCardProps {
 
 export default function SimuladoCard({ result }: SimuladoCardProps) {
   const router = useRouter();
+  const { colors } = useTheme();
   const isGoodScore = result.percentage >= 70;
 
   const handlePress = () => {
@@ -20,18 +22,18 @@ export default function SimuladoCard({ result }: SimuladoCardProps) {
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress}>
+    <TouchableOpacity style={[styles.card, { backgroundColor: colors.surface }]} onPress={handlePress}>
       <View style={styles.header}>
-        <Text style={styles.title}>{result.modulo}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{result.modulo}</Text>
         <Text style={[styles.percentage, { color: isGoodScore ? '#16a34a' : '#dc2626' }]}>
           {result.percentage.toFixed(0)}%
         </Text>
       </View>
       <View style={styles.footer}>
-        <Text style={styles.score}>
+        <Text style={[styles.score, { color: colors.textSecondary }]}>
           {result.score}/{result.totalQuestions} acertos
         </Text>
-        <Text style={styles.date}>{formatDate(result.timestamp)}</Text>
+        <Text style={[styles.date, { color: colors.textSecondary }]}>{formatDate(result.timestamp)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -39,7 +41,6 @@ export default function SimuladoCard({ result }: SimuladoCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -58,7 +59,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e293b',
   },
   percentage: {
     fontSize: 20,
@@ -71,10 +71,8 @@ const styles = StyleSheet.create({
   },
   score: {
     fontSize: 14,
-    color: '#64748b',
   },
   date: {
     fontSize: 14,
-    color: '#64748b',
   },
 });
