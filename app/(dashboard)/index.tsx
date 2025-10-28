@@ -1,19 +1,22 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Button from '../../components/Button';
 import SimuladoCard from '../../components/SimuladoCard';
 import StatsCard from '../../components/StatsCard';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useSimuladoStore } from '../../store/useSimuladoStore';
+import { getRecentResults } from '../../services/firestoreService';
+import { Result } from '../../types/simulado';
 
 export default function DashboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { colors } = useTheme();
-  const { getRecentResults, addResult, results } = useSimuladoStore();
-  const recentResults = getRecentResults(4);
+  const [results, setResults] = useState<Result[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const recentResults = results.slice(0, 4);
   
   // Calcular estatísticas
   const totalSimulados = results.length;
@@ -25,36 +28,26 @@ export default function DashboardScreen() {
     ? Math.max(...results.map(r => r.percentage)).toFixed(0)
     : '0';
 
-  // Dados de exemplo - remova isso quando tiver dados reais
+  // Carregar resultados do Firebase
   useEffect(() => {
-    if (recentResults.length === 0) {
-      // Adicionando alguns resultados de exemplo
-      addResult({
-        userId: 'user1',
-        score: 8,
-        totalQuestions: 10,
-        percentage: 80,
-        timestamp: new Date(Date.now() - 86400000), // 1 dia atrás
-        modulo: 'Simulado Completo',
-      });
-      addResult({
-        userId: 'user1',
-        score: 6,
-        totalQuestions: 10,
-        percentage: 60,
-        timestamp: new Date(Date.now() - 172800000), // 2 dias atrás
-        modulo: 'Módulo 1',
-      });
-      addResult({
-        userId: 'user1',
-        score: 9,
-        totalQuestions: 10,
-        percentage: 90,
-        timestamp: new Date(Date.now() - 259200000), // 3 dias atrás
-        modulo: 'Simulado Geral',
-      });
-    }
-  }, []);
+    const loadResults = async () => {
+      if (user?.uid) {
+        try {
+          const firebaseResults = await getRecentResults(user.uid, 10);
+          console.log('✅ Dashboard: Resultados carregados do Firebase:', firebaseResults.length);
+          if (firebaseResults.length > 0) {
+            console.log('📄 Primeiro resultado:', firebaseResults[0]);
+          }
+          setResults(firebaseResults);
+        } catch (error) {
+          console.error('❌ Dashboard: Erro ao carregar resultados:', error);
+        }
+      }
+      setLoading(false);
+    };
+    
+    loadResults();
+  }, [user]);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -89,9 +82,15 @@ export default function DashboardScreen() {
         />
       </View>
 
+
+      
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Últimos Simulados</Text>
 
-      {recentResults.length > 0 ? (
+      {loading ? (
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Carregando...</Text>
+        </View>
+      ) : recentResults.length > 0 ? (
         <View style={styles.resultsContainer}>
           {recentResults.map((result) => (
             <SimuladoCard key={result.id} result={result} />
@@ -161,5 +160,6 @@ const styles = StyleSheet.create({
   actionContainer: {
     padding: 20,
     marginTop: 20,
+    alignItems: 'center',
   },
 });

@@ -14,7 +14,7 @@ export const useSimuladoStore = create<SimuladoStore>((set, get) => ({
   addResult: (result) => {
     const newResult: Result = {
       ...result,
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
     set((state) => ({
       results: [newResult, ...state.results]

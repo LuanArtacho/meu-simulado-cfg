@@ -2,21 +2,19 @@
 // Layout para a seção do aplicativo que requer autenticação.
 // Utiliza Tabs para criar a navegação por abas na parte inferior da tela.
 
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons'; // Exemplo de ícones
 import { Tabs } from 'expo-router';
-import AuthGuard from '../../components/AuthGuard';
 
 export default function DashboardLayout() {
   return (
-    <AuthGuard>
-      <Tabs screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#3b82f6',
-      }}>
+    <Tabs screenOptions={{
+      tabBarActiveTintColor: '#3b82f6', // Azul
+    }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Dashboard',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" color={color} size={size} />,
         }}
       />
@@ -24,24 +22,26 @@ export default function DashboardLayout() {
         name="simulados"
         options={{
           title: 'Simulados',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="document-text-outline" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="resultados/index"
+        name="resultados"
         options={{
           title: 'Resultados',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart-outline" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="configuracoes/index"
+        name="configuracoes"
         options={{
           title: 'Configurações',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" color={color} size={size} />,
         }}
       />
-      </Tabs>
-    </AuthGuard>
+    </Tabs>
   );
 }

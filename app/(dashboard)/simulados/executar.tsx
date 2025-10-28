@@ -3,15 +3,16 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Button from '../../../components/Button';
 import QuestionCard from '../../../components/QuestionCard';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useSimuladoStore } from '../../../store/useSimuladoStore';
 import { simuladoCompleto1 } from '../../../data/simulados';
+import { saveResult } from '../../../services/firestoreService';
 
 export default function ExecutarSimuladoScreen() {
   const { tipo, numero } = useLocalSearchParams<{ tipo: string; numero?: string }>();
   const router = useRouter();
   const { colors } = useTheme();
-  const addResult = useSimuladoStore(state => state.addResult);
+  const { user } = useAuth();
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -60,7 +61,7 @@ export default function ExecutarSimuladoScreen() {
     setShowAnswer(!showAnswer);
   };
 
-  const finishSimulado = () => {
+  const finishSimulado = async () => {
     const finishTime = new Date();
     setEndTime(finishTime);
     
@@ -73,7 +74,7 @@ export default function ExecutarSimuladoScreen() {
     const duration = Math.floor((finishTime.getTime() - startTime.getTime()) / 1000);
 
     const resultData = {
-      userId: 'user1',
+      userId: user?.uid || 'anonymous',
       score: correctAnswers,
       totalQuestions: questions.length,
       percentage,
@@ -84,7 +85,13 @@ export default function ExecutarSimuladoScreen() {
       questions
     };
 
-    addResult(resultData);
+    // Salvar no Firebase
+    try {
+      await saveResult(resultData);
+      console.log('✅ Resultado salvo no Firebase');
+    } catch (error) {
+      console.error('❌ Erro ao salvar resultado:', error);
+    }
 
     router.push({
       pathname: '/(dashboard)/simulados/resultado',

@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
-import Button from '../../../components/Button';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useTheme } from '../../../contexts/ThemeContext';
+import Button from '../../components/Button';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function ConfiguracoesScreen() {
   const router = useRouter();

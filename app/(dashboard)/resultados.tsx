@@ -1,13 +1,50 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import SimuladoCard from '../../../components/SimuladoCard';
-import StatsCard from '../../../components/StatsCard';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { useSimuladoStore } from '../../../store/useSimuladoStore';
+import React, { useCallback, useEffect, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import SimuladoCard from '../../components/SimuladoCard';
+import StatsCard from '../../components/StatsCard';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getUserResults } from '../../services/firestoreService';
+import { Result } from '../../types/simulado';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ResultadosScreen() {
-  const { results } = useSimuladoStore();
+  const { user } = useAuth();
   const { colors } = useTheme();
+  const [results, setResults] = useState<Result[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const loadResults = async () => {
+    if (user?.uid) {
+      try {
+        console.log('🔄 Carregando resultados para usuário:', user.uid);
+        const firebaseResults = await getUserResults(user.uid);
+        setResults(firebaseResults);
+        console.log('✅ Resultados carregados:', firebaseResults.length);
+      } catch (error) {
+        console.error('❌ Erro ao carregar resultados:', error);
+      }
+    }
+    setLoading(false);
+    setRefreshing(false);
+  };
+  
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadResults();
+  };
+  
+  useEffect(() => {
+    loadResults();
+  }, [user]);
+  
+  useFocusEffect(
+    useCallback(() => {
+      loadResults();
+    }, [user])
+  );
   
   // Estatísticas por módulo
   const estatisticasPorModulo = results.reduce((acc, result) => {
@@ -22,10 +59,22 @@ export default function ResultadosScreen() {
   }, {} as Record<string, { total: number; soma: number; melhor: number }>);
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Histórico Completo</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Todos os seus simulados realizados</Text>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={[styles.title, { color: colors.text }]}>Histórico Completo</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Todos os seus simulados realizados</Text>
+          </View>
+          <TouchableOpacity onPress={onRefresh} style={[styles.refreshButton, { backgroundColor: colors.surface }]}>
+            <Ionicons name="refresh" size={20} color={colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {Object.keys(estatisticasPorModulo).length > 0 && (
@@ -58,7 +107,11 @@ export default function ResultadosScreen() {
       )}
 
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Todos os Simulados</Text>
-      {results.length > 0 ? (
+      {loading ? (
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Carregando resultados...</Text>
+        </View>
+      ) : results.length > 0 ? (
         <View style={styles.resultsContainer}>
           {results
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -82,6 +135,15 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingTop: 60,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  refreshButton: {
+    padding: 8,
+    borderRadius: 8,
   },
   title: {
     fontSize: 24,

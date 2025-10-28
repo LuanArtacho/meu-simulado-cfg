@@ -25,22 +25,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Login temporário com credenciais fixas
-    if (email === 'admin123@test.com' && password === '123') {
-      // Simular usuário logado
-      const mockUser = {
-        uid: 'admin123',
-        email: 'admin123@test.com',
-        emailVerified: true,
-      } as any;
-      setUser(mockUser);
-      return;
-    }
-    
-    // Tentar Firebase se não for as credenciais de teste
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('✅ Login Firebase realizado:', userCredential.user.email);
+    } catch (error: any) {
+      console.error('❌ Erro Firebase:', error.message);
       throw new Error('Email ou senha inválidos');
     }
   };

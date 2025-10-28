@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import Button from '../components/Button';
-import LoginHelper from '../components/LoginHelper';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen() {
@@ -28,13 +27,10 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
       
-      <LoginHelper onFillCredentials={(email, password) => {
-        setEmail(email);
-        setPassword(password);
-      }} />
+
       <TextInput
         style={styles.input}
-        placeholder="E-mail (admin123@test.com)"
+        placeholder="E-mail"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -42,12 +38,14 @@ export default function LoginScreen() {
       />
       <TextInput
         style={styles.input}
-        placeholder="Senha (123)"
+        placeholder="Senha"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Entrar" onPress={handleLogin} />
+      <View style={styles.buttonContainer}>
+        <Button title="Entrar" onPress={handleLogin} />
+      </View>
       <Text style={styles.linkText}>
         Não tem uma conta?{' '}
         <Text style={styles.link} onPress={() => router.push('/register')}>
@@ -84,10 +82,12 @@ const styles = StyleSheet.create({
   },
   linkText: {
     marginTop: 24,
-    color: '#64748b',
   },
   link: {
-    color: '#0284c7',
     fontWeight: 'bold',
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    width: '100%',
   },
 });

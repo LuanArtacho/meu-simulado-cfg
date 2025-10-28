@@ -27,11 +27,13 @@ const Button: React.FC<ButtonProps> = ({ title, disabled = false, ...props }) =>
 
 const styles = StyleSheet.create({
   button: {
-    flex: 1,
-    padding: 16,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 16,
+    minWidth: 200,
+    maxWidth: 300,
   },
   text: {
     color: 'white',

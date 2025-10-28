@@ -44,5 +44,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     gap: 16,
+    alignItems: 'center',
   },
 });
